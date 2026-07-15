@@ -263,7 +263,7 @@ a { color: inherit; }
 }
 .badge-etiqueta {
   position: absolute;
-  bottom: 10px;
+  top: 38px;
   left: 10px;
   background: var(--ink);
   color: #fff;

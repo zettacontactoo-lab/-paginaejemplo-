@@ -218,7 +218,16 @@ app.get('/api/admin/products/import-template', requireAdmin, (req, res) => {
 
 app.post('/api/admin/products/import', requireAdmin, uploadTmp.single('csv'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
-  const text = fs.readFileSync(req.file.path, 'utf-8');
+  const buffer = fs.readFileSync(req.file.path);
+
+  // Excel en Windows suele guardar el "CSV" en la codificación ANSI del sistema
+  // (Windows-1252), no en UTF-8. Si al leerlo como UTF-8 aparecen caracteres
+  // de reemplazo (los símbolos "�"), es señal de eso, y lo volvemos a leer en latin1.
+  let text = buffer.toString('utf-8');
+  if (text.includes('\uFFFD')) {
+    text = buffer.toString('latin1');
+  }
+
   const filas = parseCSV(text);
 
   let creados = 0, actualizados = 0, errores = [];

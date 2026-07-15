@@ -169,7 +169,7 @@ function formatProduct(row) {
 // ---------- Importar / exportar productos en lote (CSV) ----------
 // Esto es ADEMÁS de la carga manual (+ Nuevo producto), no la reemplaza.
 
-const CSV_COLUMNAS = ['nombre', 'descripcion', 'categoria', 'precio_venta', 'precio_oferta', 'precio_proveedor', 'sku_droppi', 'unidades_disponibles'];
+const CSV_COLUMNAS = ['nombre', 'descripcion', 'categoria', 'precio_venta', 'precio_oferta', 'precio_proveedor', 'sku_droppi', 'unidades_disponibles', 'etiqueta', 'beneficios', 'variantes'];
 
 function parseCSV(text) {
   // Quita el BOM si viene (Excel lo agrega al guardar en CSV)
@@ -207,9 +207,30 @@ function parseCSV(text) {
   });
 }
 
+// Convierte "Batería 20h|Resistente al agua|Garantía 6 meses" en la lista de beneficios
+function parseBeneficiosCSV(texto) {
+  if (!texto) return [];
+  return texto.split('|').map(b => b.trim()).filter(Boolean);
+}
+
+// Convierte "Color:Rojo,Azul,Verde;Talla:S,M,L" en los grupos de variantes
+function parseVariantesCSV(texto) {
+  if (!texto) return [];
+  return texto.split(';').map(grupoTexto => {
+    const [grupo, opcionesTexto] = grupoTexto.split(':');
+    if (!grupo || !opcionesTexto) return null;
+    return { grupo: grupo.trim(), opciones: opcionesTexto.split(',').map(o => o.trim()).filter(Boolean) };
+  }).filter(g => g && g.opciones.length);
+}
+
 // Plantilla descargable para que el admin la llene en Excel
 app.get('/api/admin/products/import-template', requireAdmin, (req, res) => {
-  const ejemplo = ['Audífonos Bluetooth X1', 'Audífonos inalámbricos con cancelación de ruido', 'Tecnología', '89000', '65000', '45000', 'DRP-1234', '10'];
+  const ejemplo = [
+    'Audífonos Bluetooth X1', 'Audífonos inalámbricos con cancelación de ruido', 'Tecnología',
+    '89000', '65000', '45000', 'DRP-1234', '10', 'Nuevo',
+    'Batería 20h|Resistente al agua|Garantía 6 meses',
+    'Color:Rojo,Azul,Negro'
+  ];
   const csv = CSV_COLUMNAS.join(',') + '\n' + ejemplo.map(v => `"${v}"`).join(',') + '\n';
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', 'attachment; filename="plantilla_productos.csv"');
@@ -233,11 +254,11 @@ app.post('/api/admin/products/import', requireAdmin, uploadTmp.single('csv'), (r
   let creados = 0, actualizados = 0, errores = [];
   const buscarPorSku = db.prepare('SELECT id FROM products WHERE sku_droppi = ? AND sku_droppi != \'\'');
   const insertar = db.prepare(`
-    INSERT INTO products (nombre, descripcion, categoria, precio_venta, precio_oferta, precio_proveedor, sku_droppi, unidades_disponibles, activo)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    INSERT INTO products (nombre, descripcion, categoria, precio_venta, precio_oferta, precio_proveedor, sku_droppi, unidades_disponibles, etiqueta, beneficios, variantes, activo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
   `);
   const actualizar = db.prepare(`
-    UPDATE products SET nombre=?, descripcion=?, categoria=?, precio_venta=?, precio_oferta=?, precio_proveedor=?, unidades_disponibles=? WHERE id=?
+    UPDATE products SET nombre=?, descripcion=?, categoria=?, precio_venta=?, precio_oferta=?, precio_proveedor=?, unidades_disponibles=?, etiqueta=?, beneficios=?, variantes=? WHERE id=?
   `);
 
   filas.forEach((fila, idx) => {
@@ -250,14 +271,17 @@ app.post('/api/admin/products/import', requireAdmin, uploadTmp.single('csv'), (r
       parseFloat(fila.precio_venta) || 0,
       fila.precio_oferta ? parseFloat(fila.precio_oferta) : null,
       parseFloat(fila.precio_proveedor) || 0,
-      parseInt(fila.unidades_disponibles) || 0
+      parseInt(fila.unidades_disponibles) || 0,
+      fila.etiqueta || '',
+      JSON.stringify(parseBeneficiosCSV(fila.beneficios)),
+      JSON.stringify(parseVariantesCSV(fila.variantes))
     ];
     const existente = fila.sku_droppi ? buscarPorSku.get(fila.sku_droppi) : null;
     if (existente) {
-      actualizar.run(datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6], existente.id);
+      actualizar.run(datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], datos[6], datos[7], datos[8], datos[9], existente.id);
       actualizados++;
     } else {
-      insertar.run(datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], fila.sku_droppi || '', datos[6]);
+      insertar.run(datos[0], datos[1], datos[2], datos[3], datos[4], datos[5], fila.sku_droppi || '', datos[6], datos[7], datos[8], datos[9]);
       creados++;
     }
   });

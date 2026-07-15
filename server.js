@@ -172,8 +172,17 @@ function formatProduct(row) {
 const CSV_COLUMNAS = ['nombre', 'descripcion', 'categoria', 'precio_venta', 'precio_oferta', 'precio_proveedor', 'sku_droppi', 'unidades_disponibles'];
 
 function parseCSV(text) {
+  // Quita el BOM si viene (Excel lo agrega al guardar en CSV)
+  text = text.replace(/^\uFEFF/, '');
   const lines = text.split(/\r?\n/).filter(l => l.trim().length);
   if (!lines.length) return [];
+
+  // Excel en configuración regional de Colombia/Latam guarda "CSV" con punto y coma,
+  // no con coma, aunque el nombre del formato diga "delimitado por comas".
+  // Detectamos automáticamente cuál separador usa este archivo.
+  const primeraLinea = lines[0];
+  const separador = (primeraLinea.split(';').length > primeraLinea.split(',').length) ? ';' : ',';
+
   const parseLine = (line) => {
     const result = [];
     let cur = '', enComillas = false;
@@ -182,7 +191,7 @@ function parseCSV(text) {
       if (ch === '"') {
         if (enComillas && line[i + 1] === '"') { cur += '"'; i++; }
         else enComillas = !enComillas;
-      } else if (ch === ',' && !enComillas) {
+      } else if (ch === separador && !enComillas) {
         result.push(cur); cur = '';
       } else cur += ch;
     }

@@ -434,6 +434,7 @@ function abrirProducto(id) {
   cargarResenas(p.id);
   renderRelacionados(p);
   configurarStarPicker();
+  abrir('productModal');
 }
 
 function validarVariantes(p) {

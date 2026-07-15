@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel administrador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="panel-shell">
+  <aside class="sidebar">
+    <div class="logo">Tu<span>Tienda</span> Admin</div>
+    <div class="nav-item active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+      Métricas
+    </div>
+    <div class="nav-item" data-tab="productos">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+      Productos
+    </div>
+    <div class="nav-item" data-tab="pedidos">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M3 8 12 3l9 5"/><path d="M12 8v13"/></svg>
+      Pedidos
+    </div>
+    <div class="nav-item" data-tab="resenas">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9"/></svg>
+      Reseñas
+    </div>
+    <div class="nav-item" data-tab="descuentos">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12 12 3.4a2 2 0 0 0-1.4-.6H4.4A2 2 0 0 0 2.4 4.8v6.2c0 .5.2 1 .6 1.4L12 21l8.6-8.6c.4-.4.4-1 0-.4Z"/><circle cx="7.5" cy="7.5" r="1"/></svg>
+      Descuentos
+    </div>
+    <div class="nav-item" data-tab="popups">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+      Menús emergentes
+    </div>
+    <div class="nav-item" data-tab="diseno">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.4 0 1.9-.9 1.9-1.8 0-.5-.2-.9-.5-1.3-.3-.3-.4-.7-.4-1.1 0-.9.8-1.4 1.7-1.4H16a4 4 0 0 0 4-4 9 9 0 0 0-8-9.4Z"/><circle cx="7.2" cy="10.5" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="14.5" cy="7.5" r="1"/><circle cx="16.5" cy="11.5" r="1"/></svg>
+      Diseño de la tienda
+    </div>
+    <div class="logout" id="logoutBtn">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </div>
+  </aside>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <section class="tab active" id="tab-dashboard">
+      <h1>Métricas</h1>
+      <div class="metrics-grid" id="metricsGrid"></div>
+      <div class="panel-box">
+        <h3>Pedidos por estado</h3>
+        <div id="estadoBreakdown"></div>
+      </div>
+      <div class="panel-box">
+        <h3>Productos más vendidos</h3>
+        <div id="topProductos"></div>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section class="tab" id="tab-productos">
+      <div class="toolbar">
+        <h1 style="margin:0;">Productos</h1>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="/api/admin/products/import-template" class="btn-secondary" style="text-decoration:none;">⬇ Descargar plantilla CSV</a>
+          <button class="btn-secondary" id="importCsvBtn">Importar desde Excel</button>
+          <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+          <button class="btn-primary" id="newProductBtn">+ Nuevo producto</button>
+        </div>
+      </div>
+      <p id="importResultMsg" class="hint" style="display:none;"></p>
+      <table>
+        <thead><tr><th>Img</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>SKU Droppi</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="productsTableBody"></tbody>
+      </table>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="tab" id="tab-pedidos">
+      <div class="toolbar">
+        <h1 style="margin:0;">Pedidos</h1>
+        <a href="/api/admin/orders/export" class="btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:7px;">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/></svg>
+          Exportar a Excel (CSV)
+        </a>
+      </div>
+      <div id="ordersList"></div>
+    </section>
+
+    <!-- DISEÑO DE LA TIENDA -->
+    <section class="tab" id="tab-diseno">
+      <h1>Diseño de la tienda</h1>
+
+      <div class="builder-grid">
+        <div class="builder-edit-col">
+          <form id="settingsForm">
+
+            <div class="panel-box">
+              <h3>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                Orden de las secciones
+              </h3>
+              <p class="hint">Arrastra para decidir en qué orden aparecen en la tienda.</p>
+              <div id="layoutOrderList" class="layout-order-list"></div>
+            </div>
+
+            <div class="panel-box">
+              <h3>Identidad</h3>
+              <div class="form-grid">
+                <label>Nombre de la marca
+                  <input type="text" name="brand_name" id="s_brand_name">
+                </label>
+                <label>Logo (opcional — si no subes uno, se muestra el nombre de texto)
+                  <input type="file" name="logo" accept="image/*" id="s_logo_input">
+                </label>
+                <p class="size-hint">Medida recomendada: 240 × 80 px, fondo transparente (PNG)</p>
+                <div class="img-preview-row" id="s_logo_preview"></div>
+                <button type="button" class="btn-secondary-sm" id="removeLogoBtn" style="align-self:flex-start;">Quitar logo</button>
+
+                <label>Favicon (ícono de la pestaña del navegador)
+                  <input type="file" name="favicon" accept="image/*" id="s_favicon_input">
+                </label>
+                <p class="size-hint">Medida recomendada: 512 × 512 px, cuadrado (PNG)</p>
+                <div class="img-preview-row" id="s_favicon_preview"></div>
+                <button type="button" class="btn-secondary-sm" id="removeFaviconBtn" style="align-self:flex-start;">Quitar favicon</button>
+              </div>
+            </div>
+
+            <div class="panel-box">
+              <h3>Paleta de colores</h3>
+              <div class="row2">
+                <label>Color principal (fondo header/footer)
+                  <input type="color" name="color_primary" id="s_color_primary">
+                </label>
+                <label>Color de acento (botones, destacados)
+                  <input type="color" name="color_accent" id="s_color_accent">
+                </label>
+              </div>
+              <label>Color secundario (insignia "pagas al recibir")
+                <input type="color" name="color_teal" id="s_color_teal">
+              </label>
+            </div>
+
+            <div class="panel-box">
+              <h3>Banner principal (hero)</h3>
+              <div class="form-grid">
+                <label>Título principal
+                  <textarea name="hero_title" id="s_hero_title" rows="2"></textarea>
+                </label>
+                <label>Subtítulo
+                  <textarea name="hero_subtitle" id="s_hero_subtitle" rows="2"></textarea>
+                </label>
+                <label>Imagen de fondo (opcional)
+                  <input type="file" name="hero_image" accept="image/*" id="s_hero_image_input">
+                </label>
+                <p class="size-hint">Medida recomendada: 1600 × 800 px</p>
+                <div class="img-preview-row" id="s_hero_preview"></div>
+              </div>
+            </div>
+
+            <div class="panel-box">
+              <h3>Banners promocionales</h3>
+              <p class="hint">Agrega tantos banners como quieras — cada uno con su imagen, texto y link.</p>
+              <p class="size-hint">Medida recomendada: 800 × 600 px — usa el mismo tamaño en todos para que se vean alineados</p>
+              <div id="bannerBlocksEditor"></div>
+              <button type="button" class="btn-secondary" id="addBannerBtn" style="margin-top:6px;">+ Agregar banner</button>
+            </div>
+
+            <div class="panel-box">
+              <h3>Redes sociales</h3>
+              <div class="form-grid">
+                <label>Facebook (link completo)
+                  <input type="text" name="social_facebook" id="s_facebook" placeholder="https://facebook.com/tutienda">
+                </label>
+                <label>Instagram (link completo)
+                  <input type="text" name="social_instagram" id="s_instagram" placeholder="https://instagram.com/tutienda">
+                </label>
+                <label>WhatsApp (link tipo wa.me)
+                  <input type="text" name="social_whatsapp" id="s_whatsapp" placeholder="https://wa.me/573001234567">
+                </label>
+                <label>TikTok (link completo)
+                  <input type="text" name="social_tiktok" id="s_tiktok" placeholder="https://tiktok.com/@tutienda">
+                </label>
+              </div>
+            </div>
+
+            <div class="panel-box">
+              <h3>Texto del pie de página</h3>
+              <label>
+                <textarea name="footer_text" id="s_footer_text" rows="2"></textarea>
+              </label>
+            </div>
+
+            <div class="panel-box">
+              <h3>Countdown de oferta</h3>
+              <label class="checkbox-row"><input type="checkbox" id="s_countdown_activo"> Mostrar barra de oferta con cuenta regresiva</label>
+              <label>Texto de la oferta
+                <input type="text" id="s_countdown_texto" placeholder="Ej: Oferta válida hoy">
+              </label>
+              <label>Fecha y hora en que termina
+                <input type="datetime-local" id="s_countdown_fecha">
+              </label>
+            </div>
+
+            <div class="panel-box">
+              <h3>Tiempo de entrega estimado</h3>
+              <label>Días hábiles de envío
+                <input type="number" id="s_envio_dias" min="1" placeholder="Ej: 5">
+              </label>
+              <p class="hint">Se calcula solo, saltando sábados y domingos, y se muestra en cada producto (ej: "Recíbelo entre el 21 y el 24 de julio").</p>
+            </div>
+
+            <div class="panel-box">
+              <h3>Textos de la tienda</h3>
+              <p class="hint">Todo el texto que ve el cliente, editable sin tocar código.</p>
+              <div class="form-grid" id="textosEditor"></div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="max-width:260px;">Guardar cambios de diseño</button>
+            <p id="settingsSavedMsg" class="saved-msg">✓ Cambios guardados.</p>
+          </form>
+        </div>
+
+        <div class="builder-preview-col">
+          <div class="preview-frame-wrap">
+            <div class="preview-chrome">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="preview-label">Vista previa en vivo</span>
+            </div>
+            <iframe id="livePreview" src="/?preview=1"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESEÑAS -->
+    <section class="tab" id="tab-resenas">
+      <h1>Reseñas de productos</h1>
+      <p class="hint">Las reseñas nuevas quedan pendientes hasta que las apruebes. Una vez aprobadas, aparecen en la ficha del producto.</p>
+      <div id="reviewsAdminList"></div>
+    </section>
+
+    <!-- DESCUENTOS -->
+    <section class="tab" id="tab-descuentos">
+      <div class="toolbar">
+        <h1 style="margin:0;">Códigos de descuento</h1>
+        <button class="btn-primary" id="newDiscountBtn">+ Nuevo código</button>
+      </div>
+      <p class="hint">Cada código, una vez usado por cualquier cliente, queda bloqueado 5 minutos antes de poder volver a usarse.</p>
+      <table>
+        <thead><tr><th>Código</th><th>Descuento</th><th>Último uso</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="discountsTableBody"></tbody>
+      </table>
+    </section>
+
+    <!-- MENÚS EMERGENTES -->
+    <section class="tab" id="tab-popups">
+      <div class="toolbar">
+        <h1 style="margin:0;">Menús emergentes</h1>
+        <button class="btn-primary" id="newPopupBtn">+ Nuevo menú emergente</button>
+      </div>
+      <p class="hint">Aparecen como links en el pie de página de la tienda. Ej: "¿Cómo funciona?", "Testimonios", "Política de cambios".</p>
+      <div id="popupsList"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Modal nuevo/editar producto -->
+<div class="modal-overlay" id="productModalOverlay">
+  <div class="modal-box">
+    <button class="close-x" id="closeProductModal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="productModalTitle">Nuevo producto</h2>
+    <form id="productForm" class="form-grid">
+      <input type="hidden" name="id" id="productId">
+      <label>Nombre<input type="text" name="nombre" required></label>
+      <label>Descripción<textarea name="descripcion" rows="3"></textarea></label>
+      <div class="row2">
+        <label>Categoría<input type="text" name="categoria" list="catList" placeholder="Ej: Hogar, Tecnología"></label>
+        <label>SKU en Droppi<input type="text" name="sku_droppi" placeholder="Referencia del proveedor"></label>
+      </div>
+      <datalist id="catList"></datalist>
+      <div class="row2">
+        <label>Precio de venta (COP)<input type="number" step="1" name="precio_venta" required></label>
+        <label>Precio de oferta (COP) — opcional<input type="number" step="1" name="precio_oferta" placeholder="Déjalo vacío si no hay oferta"></label>
+      </div>
+      <div class="row2">
+        <label>Precio proveedor (COP)<input type="number" step="1" name="precio_proveedor"></label>
+        <label>Unidades disponibles<input type="number" step="1" name="unidades_disponibles" placeholder="0"></label>
+      </div>
+      <label>Etiqueta (opcional)
+        <select name="etiqueta">
+          <option value="">Ninguna</option>
+          <option value="Nuevo">Nuevo</option>
+          <option value="Más vendido">Más vendido</option>
+        </select>
+      </label>
+
+      <div class="subsection">
+        <p class="hint" style="margin-top:0;">Beneficios en viñetas (aparecen con ✓ debajo de la descripción)</p>
+        <div id="beneficiosEditor"></div>
+        <button type="button" class="btn-secondary" id="addBeneficioBtn">+ Agregar beneficio</button>
+      </div>
+
+      <div class="subsection">
+        <p class="hint" style="margin-top:0;">Variantes (ej: Color, Talla) — si agregas al menos una, el cliente deberá elegir antes de comprar</p>
+        <div id="variantesEditor"></div>
+        <button type="button" class="btn-secondary" id="addVarianteBtn">+ Agregar grupo de variante</button>
+      </div>
+
+      <label>Imágenes
+        <input type="file" name="imagenes" multiple accept="image/*" id="imagenesInput">
+      </label>
+      <p style="font-size:12px;color:#6B6C76;margin:-6px 0 0;">Previsualización de las imágenes nuevas que vas a subir:</p>
+      <div class="img-preview-row" id="newImgPreviewRow"></div>
+      <p style="font-size:12px;color:#6B6C76;margin:4px 0 0;">Imágenes ya guardadas (haz clic en ✕ para quitarlas):</p>
+      <div class="img-preview-row" id="imgPreviewRow"></div>
+      <div class="row2">
+        <label class="checkbox-row"><input type="checkbox" name="activo" checked> Publicado (visible en la tienda)</label>
+        <label class="checkbox-row"><input type="checkbox" name="destacado"> Destacado (aparece primero)</label>
+      </div>
+      <button type="submit" class="btn-primary">Guardar producto</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal nuevo código de descuento -->
+<div class="modal-overlay" id="discountModalOverlay">
+  <div class="modal-box">
+    <button class="close-x" id="closeDiscountModal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2>Nuevo código de descuento</h2>
+    <form id="discountForm" class="form-grid">
+      <label>Código (el cliente lo escribe así, sin espacios)
+        <input type="text" name="codigo" placeholder="Ej: VERANO10" required>
+      </label>
+      <label>Porcentaje de descuento
+        <input type="number" name="porcentaje" min="1" max="100" placeholder="Ej: 10" required>
+      </label>
+      <button type="submit" class="btn-primary">Crear código</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal nuevo menú emergente -->
+<div class="modal-overlay" id="popupModalOverlay">
+  <div class="modal-box">
+    <button class="close-x" id="closePopupModal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2>Nuevo menú emergente</h2>
+    <form id="popupForm" class="form-grid">
+      <label>Nombre que aparece en el pie de página
+        <input type="text" name="titulo_menu" placeholder="Ej: ¿Cómo funciona?" required>
+      </label>
+      <label>Tipo de contenido
+        <select name="tipo" id="popupTipoSelect">
+          <option value="steps">Pasos numerados (ej: Cómo funciona)</option>
+          <option value="testimonials">Testimonios de clientes</option>
+          <option value="text">Texto simple (ej: Política de cambios)</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary">Crear menú emergente</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal editar menú emergente (items) -->
+<div class="modal-overlay" id="popupEditModalOverlay">
+  <div class="modal-box" style="max-width:640px;">
+    <button class="close-x" id="closePopupEditModal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="popupEditTitle">Editar menú emergente</h2>
+    <div id="popupEditTextContent" style="display:none;">
+      <label class="form-grid" style="display:flex;">
+        <textarea id="popupTextArea" rows="6" placeholder="Escribe aquí el texto (ej: política de cambios y devoluciones)"></textarea>
+      </label>
+      <button type="button" class="btn-primary" id="savePopupTextBtn" style="max-width:220px;margin-top:10px;">Guardar texto</button>
+    </div>
+    <div id="popupEditItemsContent" style="display:none;">
+      <div id="popupItemsList"></div>
+      <button type="button" class="btn-secondary" id="addPopupItemBtn" style="margin-top:10px;">+ Agregar elemento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal agregar/editar item de menú emergente -->
+<div class="modal-overlay" id="popupItemModalOverlay">
+  <div class="modal-box">
+    <button class="close-x" id="closePopupItemModal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h2 id="popupItemModalTitle">Agregar elemento</h2>
+    <form id="popupItemForm" class="form-grid">
+      <label id="popupItemTituloLabel">Título<input type="text" name="titulo" required></label>
+      <label id="popupItemTextoLabel">Texto<textarea name="texto" rows="3"></textarea></label>
+      <label>Imagen (opcional — si no subes una, se usa el ícono animado)
+        <input type="file" name="imagen" accept="image/*" id="popupItemImgInput">
+      </label>
+      <div class="img-preview-row" id="popupItemImgPreview"></div>
+      <label>Ícono (si no subes imagen)
+        <select name="icono" id="popupItemIconSelect">
+          <option value="cart">Carrito</option>
+          <option value="box">Caja</option>
+          <option value="check">Check</option>
+          <option value="heart">Corazón</option>
+          <option value="star">Estrella</option>
+          <option value="truck">Camión de entrega</option>
+          <option value="shield">Escudo</option>
+          <option value="smile">Carita feliz</option>
+        </select>
+      </label>
+      <label>Animación
+        <select name="animacion">
+          <option value="none">Sin animación</option>
+          <option value="bounce">Rebote suave</option>
+          <option value="pulse">Pulso</option>
+          <option value="spin">Giro</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary">Guardar elemento</button>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
